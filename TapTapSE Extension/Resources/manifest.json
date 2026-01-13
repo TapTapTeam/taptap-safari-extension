@@ -20,7 +20,7 @@
     },
 
     "content_scripts": [{
-        "js": [ "bootstrap.js", "gesture.js", "sentence.js" ],
+        "js": [ "bootstrap.js", "gesture.js", "sentence.js", "highlight.js" ],
         "matches": [ "<all_urls>" ]
     }],
 
