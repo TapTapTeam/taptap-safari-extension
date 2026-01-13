@@ -20,8 +20,8 @@
     },
 
     "content_scripts": [{
-        "js": [ "content.js" ],
-        "matches": [ "*://example.com/*" ]
+        "js": [ "bootstrap.js", "gesture.js"],
+        "matches": [ "<all_urls>" ]
     }],
 
     "action": {
