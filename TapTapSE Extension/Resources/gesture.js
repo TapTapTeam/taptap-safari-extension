@@ -11,7 +11,8 @@ TapTap.gesture = {
     const timeSinceLastTap = currentTime - this.lastTapTime;
     
     if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-      console.log("Double tap detected");
+      console.log("더블탭 감지됨");
+      TapTap.sentence.selectSentenceAt(event);
       event.preventDefault();
     }
     

@@ -1,0 +1,49 @@
+// sentence.js
+TapTap.sentence = {
+  selectSentenceAt: function(event) {
+    const touch = event.changedTouches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    const range = document.caretRangeFromPoint(x, y);
+
+    if (range && range.startContainer) {
+      const textNode = range.startContainer;
+      const offset = range.startOffset;
+
+      if (textNode.nodeType === Node.TEXT_NODE) {
+        const textContent = textNode.textContent ?? "";
+        const sentenceEndChars = ".?!…\n";
+
+        let start = offset;
+        while (start > 0) {
+          if (sentenceEndChars.includes(textContent[start - 1])) {
+            break; 
+          }
+          start--;
+        }
+
+        if (textContent[start] === ' ') {
+          start++;
+        }
+
+        let end = offset;
+        while (end < textContent.length) {
+          if (sentenceEndChars.includes(textContent[end])) {
+            end++;
+            break;
+          }
+          end++;
+        }
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+
+        const newRange = document.createRange();
+        newRange.setStart(textNode, start);
+        newRange.setEnd(textNode, end);
+        selection.addRange(newRange);
+      }
+    }
+  }
+};
