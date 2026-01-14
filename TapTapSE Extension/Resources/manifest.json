@@ -20,7 +20,12 @@
     },
 
     "content_scripts": [{
-        "js": [ "bootstrap.js", "gesture.js", "sentence.js", "highlight.js" ],
+        "js": [ "bootstrap.js", "gesture.js", "sentence.js", "highlight.js", "tooltip.js" ],
+        "matches": [ "<all_urls>" ]
+    }],
+
+    "web_accessible_resources": [{
+        "resources": [ "tooltip.css" ],
         "matches": [ "<all_urls>" ]
     }],
 

@@ -1,43 +1,69 @@
-// highlight.js - Version 2 (User-driven selection)
+// highlight.js
 TapTap.highlight = {
-  isSelecting: false,
-
-  init: function() {
-    document.addEventListener('selectionchange', this.handleSelectionChange.bind(this));
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this));
-  },
-
-  handleSelectionChange: function() {
-    const selection = window.getSelection();
-    this.isSelecting = !selection.isCollapsed;
-  },
-
-  handleTouchEnd: function() {
-    if (this.isSelecting) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        this.highlightRange(selection.getRangeAt(0));
-      }
-      // isSelecting 상태는 handleSelectionChange에서 
-      // highlightRange가 selection을 지우면서 자동으로 false가 됨
-    }
-  },
-
-  highlightRange: function(range) {
+  highlightRange: function(range, color, highlightId = 'taptap-' + Math.random().toString(36).substr(2, 9)) {
     if (!range || range.collapsed) {
-      return;
+      return null;
     }
-
+    
     try {
-      const span = document.createElement('span');
-      span.style.backgroundColor = 'yellow';
-      range.surroundContents(span);
+      const highlightedTextSpan = document.createElement('span');
+      highlightedTextSpan.classList.add('taptap-highlighted');
+      highlightedTextSpan.style.fontWeight = 'inherit !important';
+      highlightedTextSpan.style.fontStyle = 'inherit !important';
+      highlightedTextSpan.style.lineHeight = 'inherit !important';
+      highlightedTextSpan.style.backgroundColor = color || 'yellow';
+      highlightedTextSpan.style.cursor = 'pointer !important';
+      highlightedTextSpan.setAttribute('highlightid', highlightId);
+      
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('taptap-wrapper');
+      wrapper.setAttribute('data-highlight-id', highlightId);
+      wrapper.style.display = 'inline';
+      wrapper.style.position = 'relative';
+      
+      const contents = range.extractContents();
+      highlightedTextSpan.appendChild(contents);
+      wrapper.appendChild(highlightedTextSpan);
+      
+      range.insertNode(wrapper);
       window.getSelection().removeAllRanges();
+      
+      console.log("highlightRange - Highlight ID returned:", highlightId);
+      return highlightId;
     } catch (e) {
       console.error("하이라이트 생성 중 오류 발생:", e);
       window.getSelection().removeAllRanges();
+      return null;
+    }
+  },
+  
+  getHighlightElementById: function(id) {
+    return document.querySelector(`div.taptap-wrapper[data-highlight-id="${id}"]`);
+  },
+  
+  updateHighlightColor: function(id, color) {
+    const wrapper = this.getHighlightElementById(id);
+    if (wrapper) {
+      const highlightedTextSpan = wrapper.querySelector('span.taptap-highlighted');
+      if (highlightedTextSpan) {
+        highlightedTextSpan.style.backgroundColor = color;
+      }
+    }
+  },
+  
+  removeHighlight: function(id) {
+    const wrapper = this.getHighlightElementById(id);
+    if (wrapper) {
+      const highlightedTextSpan = wrapper.querySelector('span.taptap-highlighted');
+      while (highlightedTextSpan.firstChild) {
+        wrapper.insertBefore(highlightedTextSpan.firstChild, highlightedTextSpan);
+      }
+      highlightedTextSpan.remove();
+      const parent = wrapper.parentNode;
+      while (wrapper.firstChild) {
+        parent.insertBefore(wrapper.firstChild, wrapper);
+      }
+      wrapper.remove();
     }
   }
 };
-
-TapTap.highlight.init();

@@ -43,6 +43,8 @@ TapTap.sentence = {
         newRange.setStart(textNode, start);
         newRange.setEnd(textNode, end);
         selection.addRange(newRange);
+
+        TapTap.tooltip.show(newRange);
       }
     }
   }
