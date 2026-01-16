@@ -46,6 +46,26 @@ TapTap.tooltip = {
 
     this.element.addEventListener('mousedown', this.handleTooltipMouseDown.bind(this));
     document.addEventListener('click', this.handleExternalClick.bind(this), true);
+    this._tooltipRaf = null;
+
+    document.addEventListener('selectionchange', () => {
+      if (this.element.style.display !== 'block') return;
+      if (this.memoUIElement.style.display === 'flex') return;
+
+      if (this._tooltipRaf) cancelAnimationFrame(this._tooltipRaf);
+
+      this._tooltipRaf = requestAnimationFrame(() => {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+
+        const range = sel.getRangeAt(0);
+        if (range.collapsed) {
+          this.hide();
+          return;
+        }
+        this.show(range);
+      });
+    });
   },
 
   handleTooltipMouseDown: function(event) {
@@ -114,7 +134,8 @@ TapTap.tooltip = {
     if (rect.width === 0 && rect.height === 0) return;
 
     this.element.style.display = 'block';
-    this.element.style.top = (window.scrollY + rect.top - this.element.offsetHeight - 10) + 'px';
+    //TODO: 툴팁의 위치 계산하는 부분
+    this.element.style.top = (window.scrollY + rect.bottom + 23) + 'px';
     this.element.style.left = (window.scrollX + rect.left + (rect.width / 2) - (this.element.offsetWidth / 2)) + 'px';
   },
 
