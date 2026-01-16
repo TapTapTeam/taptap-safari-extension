@@ -10,11 +10,24 @@ TapTap.tooltip = {
     this.element.id = 'taptap-tooltip';
     this.element.style.display = 'none';
     this.element.innerHTML = `
-      <div class="taptap-tooltip-button" data-color="yellow"></div>
-      <div class="taptap-tooltip-button" data-color="#87CEEB"></div>
-      <div class="taptap-tooltip-button" data-color="#90EE90"></div>
-      <div class="taptap-tooltip-button taptap-tooltip-memo-button" data-action="memo">메모</div>
-    `;
+      <div style="width: 100%; height: 100%; padding: 4px; background: white; border-radius: 30px; justify-content: flex-start; align-items: center; gap: 6px; display: inline-flex">
+        <div data-property-1="Selected" data-color="#F247ED" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
+          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-pink, #FFE0F7); border-radius: 20px; border: 2px var(--Chip-pink-line, #F247ED) solid"></div>
+        </div>
+        <div data-property-1="Default" data-color="yellow" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
+          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-yellow, #FEF8CD); border-radius: 20px; border: 2px var(--State-defaultLine, rgba(255, 255, 255, 0.40)) solid"></div>
+        </div>
+        <div data-property-1="Default" data-color="#87CEEB" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
+          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-blue, #DBF3FF); border-radius: 20px; border: 2px var(--State-defaultLine, rgba(255, 255, 255, 0.40)) solid"></div>
+        </div>
+        <div data-property-1="pressed" data-action="memo" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
+          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-memo, #DEDEE3); box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.04); overflow: hidden; border-radius: 20px; outline: 2px var(--Chip-memo, #DEDEE3) solid; outline-offset: -2px">
+            <div style="width: 16px; height: 16px; left: 17px; top: 12px; position: absolute; background: var(--Chip-memo-icon, #5C5C6E)"></div>
+          </div>
+          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--State-pressedDim, rgba(175.20, 175.06, 183.25, 0.50)); border-radius: 20px"></div>
+          </div>
+        </div>
+      `;
     document.body.appendChild(this.element);
 
     this.memoUIElement = document.createElement('div');
@@ -39,10 +52,11 @@ TapTap.tooltip = {
     event.preventDefault();
     event.stopPropagation();
 
-    const target = event.target;
+    const target = event.target.closest('[data-color], [data-action]');
+    if (!target) return;
+
     const color = target.dataset.color;
     const action = target.dataset.action;
-    
     const selection = window.getSelection();
 
     if (color && selection.rangeCount > 0) {
