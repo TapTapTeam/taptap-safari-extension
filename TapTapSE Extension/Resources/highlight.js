@@ -8,7 +8,6 @@ TapTap.highlight = {
     const wrapper = event.target.closest('.taptap-wrapper');
     if (!wrapper) return;
 
-    // 더블 탭으로 인한 하이라이트 생성을 방지하기 위해, 이미 툴팁이 보이거나 메모 창이 열려있으면 아무것도 하지 않음
     if (TapTap.tooltip.element.style.display === 'block' || TapTap.tooltip.memoUIElement.style.display === 'flex') {
       return;
     }
@@ -23,8 +22,6 @@ TapTap.highlight = {
     range.selectNode(wrapper);
     TapTap.tooltip.show(range, highlightId);
 
-    // 플래그를 곧바로 다시 false로 바꾸면 selectionchange 이벤트가 툴팁을 닫을 수 있으므로,
-    // 한 프레임 뒤에 실행하여 렌더링 사이클이 지난 후 플래그를 리셋합니다.
     requestAnimationFrame(() => {
       TapTap.tooltip.isReopening = false;
     });

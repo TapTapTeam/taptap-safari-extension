@@ -81,18 +81,13 @@ TapTap.tooltip = {
     const action = target.dataset.action;
     const existingHighlightId = this.activeHighlightId;
 
-    // First, hide the tooltip for all actions.
     this.hide();
-
-    // Reset the active highlight ID for the next operation.
     this.activeHighlightId = null;
 
-    // Case 1: Modify an existing highlight
     if (existingHighlightId) {
       if (color) {
         TapTap.highlight.updateHighlightColor(existingHighlightId, color);
       } else if (action === 'memo') {
-        // Show the memo input after the tooltip is hidden.
         requestAnimationFrame(() => {
           this.showMemoInput(existingHighlightId);
         });
@@ -100,7 +95,6 @@ TapTap.tooltip = {
       return;
     }
 
-    // Case 2: Create a new highlight from a text selection
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.getRangeAt(0).collapsed) {
       return;

@@ -12,7 +12,15 @@ TapTap.gesture = {
     
     if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
       console.log("더블탭 감지됨");
-      TapTap.sentence.selectSentenceAt(event);
+      
+      const wrapper = event.target.closest('.taptap-wrapper');
+      if (wrapper) {
+        const highlightId = wrapper.dataset.highlightId;
+        TapTap.highlight.removeHighlight(highlightId);
+      } else {
+        TapTap.sentence.selectSentenceAt(event);
+      }
+      
       event.preventDefault();
     }
     
