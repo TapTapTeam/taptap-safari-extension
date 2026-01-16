@@ -2,7 +2,8 @@
 TapTap.tooltip = {
   element: null,
   memoUIElement: null,
-  currentMemoHighlightId: null,
+  activeHighlightId: null,
+  isReopening: false,
 
   init: function() {
     this.injectCSS('tooltip.css');
@@ -49,6 +50,7 @@ TapTap.tooltip = {
     this._tooltipRaf = null;
 
     document.addEventListener('selectionchange', () => {
+      if (this.isReopening) return;
       if (this.element.style.display !== 'block') return;
       if (this.memoUIElement.style.display === 'flex') return;
 
@@ -77,22 +79,43 @@ TapTap.tooltip = {
 
     const color = target.dataset.color;
     const action = target.dataset.action;
-    const selection = window.getSelection();
+    const existingHighlightId = this.activeHighlightId;
 
-    if (color && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      TapTap.highlight.highlightRange(range, color);
-      this.hide();
-    } else if (action === 'memo' && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const highlightId = TapTap.highlight.highlightRange(range, 'yellow');
-      console.log("메모 버튼 클릭 후 하이라이팅 됨", highlightId);
-      if (highlightId) {
+    // First, hide the tooltip for all actions.
+    this.hide();
+
+    // Reset the active highlight ID for the next operation.
+    this.activeHighlightId = null;
+
+    // Case 1: Modify an existing highlight
+    if (existingHighlightId) {
+      if (color) {
+        TapTap.highlight.updateHighlightColor(existingHighlightId, color);
+      } else if (action === 'memo') {
+        // Show the memo input after the tooltip is hidden.
         requestAnimationFrame(() => {
-          this.showMemoInput(highlightId);
+          this.showMemoInput(existingHighlightId);
         });
       }
-      this.hide();
+      return;
+    }
+
+    // Case 2: Create a new highlight from a text selection
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.getRangeAt(0).collapsed) {
+      return;
+    }
+    const range = selection.getRangeAt(0);
+
+    if (color) {
+      TapTap.highlight.highlightRange(range, color);
+    } else if (action === 'memo') {
+      const newHighlightId = TapTap.highlight.highlightRange(range, 'yellow'); // Default color
+      if (newHighlightId) {
+        requestAnimationFrame(() => {
+          this.showMemoInput(newHighlightId);
+        });
+      }
     }
   },
 
@@ -111,8 +134,8 @@ TapTap.tooltip = {
 
   handleMemoBlur: function(event) {
     const memoText = event.target.value;
-    if (this.currentMemoHighlightId) {
-        this.saveMemo(this.currentMemoHighlightId, memoText);
+    if (this.activeHighlightId) {
+        this.saveMemo(this.activeHighlightId, memoText);
     }
     this.hideMemoInput();
   },
@@ -128,8 +151,9 @@ TapTap.tooltip = {
       .catch(err => console.error("Failed to inject CSS:", err));
   },
 
-  show: function(range) {
+  show: function(range, highlightId = null) {
     if (!range) return;
+    this.activeHighlightId = highlightId;
 
     const rect = range.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return;
@@ -158,13 +182,13 @@ TapTap.tooltip = {
     }
     this.memoUIElement.style.display = 'flex';
     console.log("memoUIElement display style set to:", this.memoUIElement.style.display);
-    this.currentMemoHighlightId = highlightId;
+    this.activeHighlightId = highlightId;
   },
 
   hideMemoInput: function() {
     this.memoUIElement.style.display = 'none';
     document.body.appendChild(this.memoUIElement); 
-    this.currentMemoHighlightId = null;
+    this.activeHighlightId = null;
   },
 
   // TODO: 실제 저장 로직은 store.js에서 구현 (지금은 콘솔 로그)
