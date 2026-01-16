@@ -31,14 +31,14 @@ TapTap.tooltip = {
     document.body.appendChild(this.element);
 
     this.memoUIElement = document.createElement('div');
-    this.memoUIElement.classList.add('taptap-memo-ui');
+    this.memoUIElement.id = 'memo-box';
     this.memoUIElement.style.display = 'none';
     this.memoUIElement.innerHTML = 
     `
-      <textarea class="taptap-memo-input" placeholder="메모를 입력하세요..."></textarea>
+      <textarea placeholder="메모를 입력하세요..."></textarea>
     `;
     document.body.appendChild(this.memoUIElement);
-    const memoTextarea = this.memoUIElement.querySelector('.taptap-memo-input');
+    const memoTextarea = this.memoUIElement.querySelector('textarea');
     
     if (memoTextarea) {
       memoTextarea.addEventListener('blur', this.handleMemoBlur.bind(this));
@@ -92,6 +92,7 @@ TapTap.tooltip = {
           this.showMemoInput(highlightId);
         });
       }
+      this.hide();
     }
   },
 
@@ -149,8 +150,8 @@ TapTap.tooltip = {
     console.log("Wrapper found:", wrapper);
     if (!wrapper) return;
 
-    wrapper.appendChild(this.memoUIElement);
-    const textarea = this.memoUIElement.querySelector('.taptap-memo-input');
+    wrapper.parentNode.insertBefore(this.memoUIElement, wrapper.nextSibling);
+    const textarea = this.memoUIElement.querySelector('textarea');
     if (textarea) {
       textarea.value = initialMemoText;
       textarea.focus();
