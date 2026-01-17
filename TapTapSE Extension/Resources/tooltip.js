@@ -11,23 +11,14 @@ TapTap.tooltip = {
     this.element.id = 'taptap-tooltip';
     this.element.style.display = 'none';
     this.element.innerHTML = `
-      <div style="width: 100%; height: 100%; padding: 4px; background: white; border-radius: 30px; justify-content: flex-start; align-items: center; gap: 6px; display: inline-flex">
-        <div data-property-1="Selected" data-color="#F247ED" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
-          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-pink, #FFE0F7); border-radius: 20px; border: 2px var(--Chip-pink-line, #F247ED) solid"></div>
+      <div class="tooltip-container">
+        <div class="color-button" data-color="#F247ED"></div>
+        <div class="color-button" data-color="yellow"></div>
+        <div class="color-button" data-color="#87CEEB"></div>
+        <div class="memo-button" data-action="memo">
+          <div class="memo-icon"></div>
         </div>
-        <div data-property-1="Default" data-color="yellow" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
-          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-yellow, #FEF8CD); border-radius: 20px; border: 2px var(--State-defaultLine, rgba(255, 255, 255, 0.40)) solid"></div>
-        </div>
-        <div data-property-1="Default" data-color="#87CEEB" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
-          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-blue, #DBF3FF); border-radius: 20px; border: 2px var(--State-defaultLine, rgba(255, 255, 255, 0.40)) solid"></div>
-        </div>
-        <div data-property-1="pressed" data-action="memo" style="width: 50px; height: 40px; position: relative; border-radius: 20px">
-          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--Chip-memo, #DEDEE3); box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.04); overflow: hidden; border-radius: 20px; outline: 2px var(--Chip-memo, #DEDEE3) solid; outline-offset: -2px">
-            <div style="width: 16px; height: 16px; left: 17px; top: 12px; position: absolute; background: var(--Chip-memo-icon, #5C5C6E)"></div>
-          </div>
-          <div style="width: 50px; height: 40px; left: 0px; top: 0px; position: absolute; background: var(--State-pressedDim, rgba(175.20, 175.06, 183.25, 0.50)); border-radius: 20px"></div>
-          </div>
-        </div>
+      </div>
       `;
     document.body.appendChild(this.element);
 
@@ -152,10 +143,46 @@ TapTap.tooltip = {
     const rect = range.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return;
 
+    const colorButtons = this.element.querySelectorAll('.color-button');
+    colorButtons.forEach(button => button.classList.remove('selected'));
+
+    let currentColor = 'yellow';
+    if (this.activeHighlightId) {
+      const highlightBgColor = TapTap.highlight.getHighlightColor(this.activeHighlightId);
+      if (highlightBgColor) {
+        currentColor = this.normalizeColor(highlightBgColor);
+      }
+    }
+
+    const selectedButton = Array.from(colorButtons).find(
+      button => this.normalizeColor(button.dataset.color) === currentColor
+    );
+    if (selectedButton) {
+      selectedButton.classList.add('selected');
+    }
+
     this.element.style.display = 'block';
     //TODO: 툴팁의 위치 계산하는 부분
     this.element.style.top = (window.scrollY + rect.bottom + 23) + 'px';
-    this.element.style.left = (window.scrollX + rect.left + (rect.width / 2) - (this.element.offsetWidth / 2)) + 'px';
+    this.element.style.left =
+      (window.scrollX + (window.innerWidth / 2) - (this.element.offsetWidth / 2)) + 'px';
+  },
+
+  normalizeColor: function(color) {
+    if (!color) return null;
+    const lowerColor = color.toLowerCase();
+    switch (lowerColor) {
+      case 'rgb(242, 71, 237)': return '#f247ed';
+      case 'rgb(255, 255, 0)':
+      case 'yellow':           return 'yellow';
+      case 'rgb(135, 206, 235)': return '#87ceeb';
+      case '#f247ed': return '#f247ed';
+      case '#87ceeb': return '#87ceeb';
+      case '#ffe0f7': return '#ffe0f7';
+      case '#fef8cd': return '#fef8cd';
+      case '#dbf3ff': return '#dbf3ff';
+      default: return lowerColor;
+    }
   },
 
   hide: function() {

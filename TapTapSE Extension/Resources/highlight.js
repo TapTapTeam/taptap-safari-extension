@@ -77,6 +77,17 @@ TapTap.highlight = {
       }
     }
   },
+
+  getHighlightColor: function(id) {
+    const wrapper = this.getHighlightElementById(id);
+    if (wrapper) {
+      const highlightedTextSpan = wrapper.querySelector('span.taptap-highlighted');
+      if (highlightedTextSpan) {
+        return highlightedTextSpan.style.backgroundColor;
+      }
+    }
+    return null;
+  },
   
   removeHighlight: function(id) {
     const wrapper = this.getHighlightElementById(id);
