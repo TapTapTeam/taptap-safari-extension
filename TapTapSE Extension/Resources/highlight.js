@@ -71,11 +71,22 @@ TapTap.highlight = {
   
   updateHighlightColor: function(id, color) {
     const wrapper = this.getHighlightElementById(id);
-    if (wrapper) {
-      const highlightedTextSpan = wrapper.querySelector('span.taptap-highlighted');
-      if (highlightedTextSpan) {
-        highlightedTextSpan.style.backgroundColor = color;
-      }
+    if (!wrapper) return;
+
+    // 1. 하이라이트 자체의 색상 변경
+    const highlightedTextSpan = wrapper.querySelector('span.taptap-highlighted');
+    if (highlightedTextSpan) {
+      highlightedTextSpan.style.backgroundColor = color;
+    }
+
+    // 2. 연결된 메모 캡슐들의 색상 변경
+    const capsuleContainer = wrapper.nextElementSibling;
+    if (capsuleContainer && capsuleContainer.classList.contains('taptap-capsules-container')) {
+      const capsules = capsuleContainer.querySelectorAll('.memo-capsule');
+      const normalizedColor = TapTap.tooltip.normalizeColor(color);
+      capsules.forEach(capsule => {
+        capsule.setAttribute('data-highlight-color', normalizedColor);
+      });
     }
   },
 

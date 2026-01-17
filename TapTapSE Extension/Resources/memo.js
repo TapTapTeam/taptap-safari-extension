@@ -9,7 +9,6 @@ TapTap.memo = {
     this.memoUIElement.id = 'memo-box';
     this.memoUIElement.style.display = 'none';
     this.memoUIElement.innerHTML = `
-      <div class="capsule-container"></div>
       <textarea class="capsule-input-textarea" placeholder="메모를 입력하세요."></textarea>
     `;
     document.body.appendChild(this.memoUIElement);
@@ -34,6 +33,7 @@ TapTap.memo = {
   handleMemoBlur: function(event) {
     const memoText = event.target.value.trim();
     if (!memoText) {
+      this.hideMemoInput(); // 내용이 없어도, 포커스를 잃으면 창을 닫습니다.
       return;
     }
     
@@ -41,19 +41,27 @@ TapTap.memo = {
     if (activeHighlightId) {
       this.saveMemo(activeHighlightId, memoText);
 
-      const highlightColor = TapTap.highlight.getHighlightColor(activeHighlightId) || 'yellow';
-      this.renderMemoCapsule(memoText, highlightColor);
+      this.renderMemoCapsule(activeHighlightId, memoText);
 
       event.target.value = '';
+      this.hideMemoInput(); // 내용 저장 후에도 창을 닫습니다.
     }
   },
   
-  renderMemoCapsule: function(memoText, highlightColor) {
-    const capsuleContainer = this.memoUIElement.querySelector('.capsule-container');
-    if (!capsuleContainer) return;
+  renderMemoCapsule: function(highlightId, memoText) {
+    const wrapper = TapTap.highlight.getHighlightElementById(highlightId);
+    if (!wrapper) return;
 
+    // 캡슐들을 담을 컨테이너를 찾거나 새로 만듭니다.
+    let capsuleContainer = wrapper.nextElementSibling;
+    if (!capsuleContainer || !capsuleContainer.classList.contains('taptap-capsules-container')) {
+      capsuleContainer = document.createElement('div');
+      capsuleContainer.className = 'taptap-capsules-container';
+      wrapper.parentNode.insertBefore(capsuleContainer, wrapper.nextSibling);
+    }
+
+    const highlightColor = TapTap.highlight.getHighlightColor(highlightId) || 'yellow';
     const normalized = TapTap.tooltip.normalizeColor(highlightColor);
-
     const memoId = 'memo-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
 
     const capsule = document.createElement('div');
