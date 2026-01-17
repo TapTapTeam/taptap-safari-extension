@@ -1,4 +1,5 @@
 // sentence.js
+window.TapTap = window.TapTap || {};
 TapTap.sentence = {
   selectSentenceAt: function(event) {
     const touch = event.changedTouches[0];

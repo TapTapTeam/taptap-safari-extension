@@ -1,7 +1,7 @@
 // tooltip.js
+window.TapTap = window.TapTap || {};
 TapTap.tooltip = {
   element: null,
-  memoUIElement: null,
   activeHighlightId: null,
   isReopening: false,
 
@@ -22,20 +22,6 @@ TapTap.tooltip = {
       `;
     document.body.appendChild(this.element);
 
-    this.memoUIElement = document.createElement('div');
-    this.memoUIElement.id = 'memo-box';
-    this.memoUIElement.style.display = 'none';
-    this.memoUIElement.innerHTML = 
-    `
-      <textarea placeholder="메모를 입력하세요..."></textarea>
-    `;
-    document.body.appendChild(this.memoUIElement);
-    const memoTextarea = this.memoUIElement.querySelector('textarea');
-    
-    if (memoTextarea) {
-      memoTextarea.addEventListener('blur', this.handleMemoBlur.bind(this));
-    }
-
     this.element.addEventListener('mousedown', this.handleTooltipMouseDown.bind(this));
     document.addEventListener('click', this.handleExternalClick.bind(this), true);
     this._tooltipRaf = null;
@@ -43,7 +29,7 @@ TapTap.tooltip = {
     document.addEventListener('selectionchange', () => {
       if (this.isReopening) return;
       if (this.element.style.display !== 'block') return;
-      if (this.memoUIElement.style.display === 'flex') return;
+      // if (TapTap.memo && TapTap.memo.memoUIElement.style.display === 'flex') return;
 
       if (this._tooltipRaf) cancelAnimationFrame(this._tooltipRaf);
 
@@ -73,14 +59,14 @@ TapTap.tooltip = {
     const existingHighlightId = this.activeHighlightId;
 
     this.hide();
-    this.activeHighlightId = null;
+     this.activeHighlightId = null;
 
     if (existingHighlightId) {
       if (color) {
         TapTap.highlight.updateHighlightColor(existingHighlightId, color);
       } else if (action === 'memo') {
         requestAnimationFrame(() => {
-          this.showMemoInput(existingHighlightId);
+          TapTap.memo.showMemoInput(existingHighlightId);
         });
       }
       return;
@@ -98,31 +84,35 @@ TapTap.tooltip = {
       const newHighlightId = TapTap.highlight.highlightRange(range, 'yellow'); // Default color
       if (newHighlightId) {
         requestAnimationFrame(() => {
-          this.showMemoInput(newHighlightId);
+          TapTap.memo.showMemoInput(newHighlightId);
         });
       }
     }
   },
 
   handleExternalClick: function(event) {
+    const wrapper = event.target.closest('.taptap-wrapper');
+    if (wrapper) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const highlightId = wrapper.dataset.highlightId;
+      const range = document.createRange();
+      range.selectNode(wrapper);
+      
+      this.isReopening = true;
+      this.show(range, highlightId);
+      setTimeout(() => { this.isReopening = false; }, 100);
+
+      return; 
+    }
+
     if (this.element.style.display === 'block' && !this.element.contains(event.target)) {
       const selection = window.getSelection();
       if (selection.isCollapsed) {
           this.hide();
       }
     }
-
-    if (this.memoUIElement.style.display === 'flex' && !this.memoUIElement.contains(event.target)) {
-        this.hideMemoInput();
-    }
-  },
-
-  handleMemoBlur: function(event) {
-    const memoText = event.target.value;
-    if (this.activeHighlightId) {
-        this.saveMemo(this.activeHighlightId, memoText);
-    }
-    this.hideMemoInput();
   },
 
   injectCSS: function(file) {
@@ -162,10 +152,8 @@ TapTap.tooltip = {
     }
 
     this.element.style.display = 'block';
-    //TODO: 툴팁의 위치 계산하는 부분
     this.element.style.top = (window.scrollY + rect.bottom + 23) + 'px';
-    this.element.style.left =
-      (window.scrollX + (window.innerWidth / 2) - (this.element.offsetWidth / 2)) + 'px';
+    this.element.style.left = (window.scrollX + rect.left + (rect.width / 2) - (this.element.offsetWidth / 2)) + 'px';
   },
 
   normalizeColor: function(color) {
@@ -187,35 +175,5 @@ TapTap.tooltip = {
 
   hide: function() {
     this.element.style.display = 'none';
-  },
-
-  showMemoInput: function(highlightId, initialMemoText = "") {
-    console.log("showMemoInput called with highlightId:", highlightId);
-    const wrapper = TapTap.highlight.getHighlightElementById(highlightId);
-    console.log("Wrapper found:", wrapper);
-    if (!wrapper) return;
-
-    wrapper.parentNode.insertBefore(this.memoUIElement, wrapper.nextSibling);
-    const textarea = this.memoUIElement.querySelector('textarea');
-    if (textarea) {
-      textarea.value = initialMemoText;
-      textarea.focus();
-    }
-    this.memoUIElement.style.display = 'flex';
-    console.log("memoUIElement display style set to:", this.memoUIElement.style.display);
-    this.activeHighlightId = highlightId;
-  },
-
-  hideMemoInput: function() {
-    this.memoUIElement.style.display = 'none';
-    document.body.appendChild(this.memoUIElement); 
-    this.activeHighlightId = null;
-  },
-
-  // TODO: 실제 저장 로직은 store.js에서 구현 (지금은 콘솔 로그)
-  saveMemo: function(highlightId, memoText) {
-    console.log(`메모 저장! Highlight ID: ${highlightId}, 내용: "${memoText}"`);
   }
 };
-
-TapTap.tooltip.init();

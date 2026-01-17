@@ -1,4 +1,5 @@
 // highlight.js
+window.TapTap = window.TapTap || {};
 TapTap.highlight = {
   init: function() {
     document.body.addEventListener('click', this.handleHighlightClick.bind(this));
@@ -105,5 +106,3 @@ TapTap.highlight = {
     }
   }
 };
-
-TapTap.highlight.init();

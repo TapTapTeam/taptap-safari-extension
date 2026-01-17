@@ -1,4 +1,5 @@
 // gesture.js
+window.TapTap = window.TapTap || {};
 TapTap.gesture = {
   lastTapTime: 0,
   
@@ -27,6 +28,4 @@ TapTap.gesture = {
     this.lastTapTime = currentTime;
   }
 };
-
-TapTap.gesture.init();
 
